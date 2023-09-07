@@ -7,7 +7,6 @@
 #include <map>
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 #include <GLES2/gl2.h>
 
 #include "maptile.h"
@@ -17,6 +16,9 @@
 #include "textrender.h"
 #include "meshes.h"
 #include "config.h"
+#include "singleinst.h"
+
+#include "checkgl.h"
 
 void calcViewportParams(int* x, int* y, int* w, int* h, int ww, int wh, int aw, int ah)
 {
@@ -42,23 +44,39 @@ void quitSDLWindow(SDL_Window* w)
     SDL_Quit();
 }
 
-inline void checkGL() { }
-
 int main(int argc, char** argv)
 {
+    const int ok = 0;
+
+#ifdef __WIN32__
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "system");
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, "0");
+    SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
+    SDL_SetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER, "none");
+#endif
+
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
     {
         fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
         return 1;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    gConf.init();
+
+    if (singleInst() != ok)
+    {
+        return 1;
+    }
+
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, int(gConf.depthBits()));
+
     uint32_t fullscreenFlag = 0;
     if (gConf.fullscreen())
     {
@@ -93,17 +111,15 @@ int main(int argc, char** argv)
     SDL_GL_SetSwapInterval(vsync);
     ShaderMng shaderMng;
     shaderMng.init();
-    glClearColor(0.f, 0.f, 0.f, 0.f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+    glClearColor(0.f, 0.5f, 0.f, 0.f); checkGL(__FILE__, __LINE__);
+    glEnable(GL_DEPTH_TEST); checkGL(__FILE__, __LINE__);
+    glDepthFunc(GL_LEQUAL); checkGL(__FILE__, __LINE__);
 
-    glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE); checkGL(__FILE__, __LINE__);
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); checkGL(__FILE__, __LINE__);
 
     TextRender textRender;
-
-    //const int confMinLoadFade = 49;
 
     const int confFadeMs = 1000;
 
@@ -119,7 +135,6 @@ int main(int argc, char** argv)
     MeshSkybox skybox;
     MeshFader fader;
 
-
     int tilePos0 = gConf.pos0();
     int tilePos1 = gConf.pos1();
 
@@ -128,7 +143,6 @@ int main(int argc, char** argv)
 
     if (argc == 2)
     {
-        const int ok = 0;
         TileLocation loc;
         if (getLocationFromIni(argv[1], loc) == ok)
         {
@@ -144,8 +158,6 @@ int main(int argc, char** argv)
     const float mouseRotSpeed = gConf.mouseSensitivity() * 0.001f;
     const float movementSpeed = gConf.speed();
     const float movementFastSpeed = gConf.shiftSpeed();
-
-    const int ok = 0;
 
     MapTile firstTile;
     if (firstTile.load(currentKey) != ok)
@@ -400,8 +412,8 @@ int main(int argc, char** argv)
             int x, y, w, h;
             SDL_GL_GetDrawableSize(window.get(), &w, &h);
             calcViewportParams(&x, &y, &w, &h, w, h, aspectW, aspectH);
-            glViewport(x, y, w, h);
-            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // clears the whole drawable, not just glViewport area
+            glViewport(x, y, w, h); checkGL(__FILE__, __LINE__);
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); checkGL(__FILE__, __LINE__); // clears the whole drawable, not just glViewport area
 
             textOrthoMat = glm::ortho(0.f, float(w), float(h), 0.f);
 
@@ -508,7 +520,7 @@ int main(int argc, char** argv)
         }
     }
 
-    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); checkGL(__FILE__, __LINE__);
     SDL_GL_SwapWindow(window.get());
 
     SDL_HideWindow(window.get()); // hide window immediately after user quits

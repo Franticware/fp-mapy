@@ -1,17 +1,25 @@
 #include "freespace.h"
 
+#ifndef __WIN32__
+
 #include <sys/statvfs.h>
 
 long getAvailableSpace(const char* path)
 {
-    // https://www.systutorials.com/how-to-get-available-filesystem-space-on-linux-a-c-function-and-a-cpp-example/
     struct statvfs stat;
-
-    if (statvfs(path, &stat) != 0) {
-        // error happens, just quits here
+    if (statvfs(path, &stat) != 0)
+    {
         return -1;
     }
-
-    // the available size is f_bsize * f_bavail
     return stat.f_bsize * stat.f_bavail;
 }
+
+#else
+
+#include <windows.h>
+
+long getAvailableSpace(const char* path)
+{
+}
+
+#endif

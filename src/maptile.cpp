@@ -11,6 +11,8 @@
 #include "culling.h"
 #include "config.h"
 
+#include "checkgl.h"
+
 MapTile::MapTile()
 {
 }
@@ -21,6 +23,7 @@ int MapTile::load(MapTileKey k)
     //const int err = 1;
     //const int err404 = 404;
     const char* baseUrl = gConf.baseUrl().c_str();
+    //const char* baseUrl = "http://mapserver-3d.mapy.cz/latestStage/tilesets/cities/";
     char urlBuff[256] = {0};
     snprintf(urlBuff, 255, "%s21-%06d-%06d.bin", baseUrl, k.x, k.y);
     int res = 0;
@@ -153,8 +156,8 @@ TileGl::~TileGl()
 {
     for (size_t i = 0; i != m_submeshes.size(); ++i)
     {
-        glDeleteTextures(1, &(m_submeshes[i].m_tex));
-        glDeleteBuffers(1, &(m_submeshes[i].m_vbo));
+        glDeleteTextures(1, &(m_submeshes[i].m_tex)); checkGL(__FILE__, __LINE__);
+        glDeleteBuffers(1, &(m_submeshes[i].m_vbo)); checkGL(__FILE__, __LINE__);
     }
     m_submeshes.clear();
 }
@@ -176,10 +179,10 @@ void TileGl::load(const MapTile& mt)
     for (size_t i = 0; i != mt.m_vboData.size(); ++i)
     {
         SubMesh subm;
-        glGenBuffers(1, &subm.m_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, subm.m_vbo);
-        glBufferData(GL_ARRAY_BUFFER, mt.m_vboData[i].size() * sizeof(float), mt.m_vboData[i].data(), GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glGenBuffers(1, &subm.m_vbo); checkGL(__FILE__, __LINE__);
+        glBindBuffer(GL_ARRAY_BUFFER, subm.m_vbo); checkGL(__FILE__, __LINE__);
+        glBufferData(GL_ARRAY_BUFFER, mt.m_vboData[i].size() * sizeof(float), mt.m_vboData[i].data(), GL_STATIC_DRAW); checkGL(__FILE__, __LINE__);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); checkGL(__FILE__, __LINE__);
         subm.m_vertCount = mt.m_vboData[i].size() / 5;
         subm.m_tex = load_texture(mt.m_pics[i]);
         m_submeshes.push_back(subm);
@@ -196,20 +199,18 @@ bool TileGl::cullFrustum(const glm::mat4& m) const
     return cullingFrustumBox(m, m_mid, m_bbox);
 }
 
-inline void checkGL() { }
-
 void TileGl::render() const
 {
     for (const auto& subm : m_submeshes)
     {
-        glBindTexture(GL_TEXTURE_2D, subm.m_tex);
-        glBindBuffer(GL_ARRAY_BUFFER, subm.m_vbo);
-        glEnableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL();
-        glEnableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL();
-        glVertexAttribPointer((GLuint)ShaderAttrib::Pos, 3, GL_FLOAT, GL_FALSE, sizeof(float)*5, 0);
-        glVertexAttribPointer((GLuint)ShaderAttrib::Tex, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, (void*)(sizeof(float)*3));
-        glDrawArrays(GL_TRIANGLES, 0, subm.m_vertCount);
-        glDisableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL();
-        glDisableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL();
+        glBindTexture(GL_TEXTURE_2D, subm.m_tex); checkGL(__FILE__, __LINE__);
+        glBindBuffer(GL_ARRAY_BUFFER, subm.m_vbo); checkGL(__FILE__, __LINE__);
+        glEnableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL(__FILE__, __LINE__);
+        glEnableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL(__FILE__, __LINE__);
+        glVertexAttribPointer((GLuint)ShaderAttrib::Pos, 3, GL_FLOAT, GL_FALSE, sizeof(float)*5, 0); checkGL(__FILE__, __LINE__);
+        glVertexAttribPointer((GLuint)ShaderAttrib::Tex, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, (void*)(sizeof(float)*3)); checkGL(__FILE__, __LINE__);
+        glDrawArrays(GL_TRIANGLES, 0, subm.m_vertCount); checkGL(__FILE__, __LINE__);
+        glDisableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL(__FILE__, __LINE__);
+        glDisableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL(__FILE__, __LINE__);
     }
 }

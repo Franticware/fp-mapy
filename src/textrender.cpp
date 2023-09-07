@@ -5,7 +5,7 @@
 #include <cstdarg>
 #include <cstdio>
 
-inline void checkGL() { }
+#include "checkgl.h"
 
 TextRender::TextRender(int width, int height) : m_w(width), m_h(height)
 {
@@ -43,17 +43,17 @@ TextRender::TextRender(int width, int height) : m_w(width), m_h(height)
         m_textBuf[i] = (rand() % 5) > 3 ? 255 : 0;
     }*/
 
-    glGenTextures(1, &m_tex); checkGL();
-    glBindTexture(GL_TEXTURE_2D, m_tex); checkGL();
+    glGenTextures(1, &m_tex); checkGL(__FILE__, __LINE__);
+    glBindTexture(GL_TEXTURE_2D, m_tex); checkGL(__FILE__, __LINE__);
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, m_w, m_h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, m_textBuf.data()); checkGL();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); checkGL();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); checkGL();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, m_w, m_h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, m_textBuf.data()); checkGL(__FILE__, __LINE__);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); checkGL(__FILE__, __LINE__);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); checkGL(__FILE__, __LINE__);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); checkGL();
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); checkGL();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); checkGL(__FILE__, __LINE__);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); checkGL(__FILE__, __LINE__);
     }
-    glBindTexture(GL_TEXTURE_2D, 0); checkGL();
+    glBindTexture(GL_TEXTURE_2D, 0); checkGL(__FILE__, __LINE__);
 
 
 
@@ -171,22 +171,22 @@ void TextRender::putc(int xpos, int ypos, char c)
 void TextRender::render()
 {
     glBindTexture(GL_TEXTURE_2D, m_tex);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GL_ALPHA, GL_UNSIGNED_BYTE, m_textBuf.data()); checkGL();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_w, m_h, GL_ALPHA, GL_UNSIGNED_BYTE, m_textBuf.data()); checkGL(__FILE__, __LINE__);
 
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glEnableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL();
-    glEnableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL();
-    glEnableVertexAttribArray((GLuint)ShaderAttrib::Color); checkGL();
+    glEnableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL(__FILE__, __LINE__);
+    glEnableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL(__FILE__, __LINE__);
+    glEnableVertexAttribArray((GLuint)ShaderAttrib::Color); checkGL(__FILE__, __LINE__);
     glVertexAttribPointer((GLuint)ShaderAttrib::Pos, 3, GL_FLOAT, GL_FALSE, sizeof(float)*9, 0);
     glVertexAttribPointer((GLuint)ShaderAttrib::Tex, 2, GL_FLOAT, GL_FALSE, sizeof(float)*9, (void*)(sizeof(float)*3));
     glVertexAttribPointer((GLuint)ShaderAttrib::Color, 4, GL_FLOAT, GL_FALSE, sizeof(float)*9, (void*)(sizeof(float)*5));
     glDrawArrays(GL_TRIANGLES, 0, 6 * 5);
-    glDisableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL();
-    glDisableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL();
-    glDisableVertexAttribArray((GLuint)ShaderAttrib::Color); checkGL();
+    glDisableVertexAttribArray((GLuint)ShaderAttrib::Pos); checkGL(__FILE__, __LINE__);
+    glDisableVertexAttribArray((GLuint)ShaderAttrib::Tex); checkGL(__FILE__, __LINE__);
+    glDisableVertexAttribArray((GLuint)ShaderAttrib::Color); checkGL(__FILE__, __LINE__);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 

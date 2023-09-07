@@ -12,6 +12,12 @@ Config gConf; // config singleton
 
 Config::Config()
 {
+}
+
+void  Config::init()
+{
+    m_init = true;
+
     m_configPath = SDL_GetPrefPath(PREF_ORG, PREF_APP);
     mINI::INIFile file(m_configPath + CONFIG_NAME);
     mINI::INIStructure ini;
@@ -26,6 +32,7 @@ Config::Config()
     // advanced
     sync(ini, v_vsync, "advanced", "vsync");
     sync(ini, v_aspectRatio, "advanced", "aspectRatio");
+    sync(ini, v_depthBits, "advanced", "depthBits");
     sync(ini, v_farPlane, "advanced", "farPlane");
     sync(ini, v_fov, "advanced", "fov");
     sync(ini, v_speed, "advanced", "speed");

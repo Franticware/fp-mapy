@@ -7,11 +7,18 @@
 class MeshSkybox
 {
 public:
-    MeshSkybox();
+    MeshSkybox(bool compat = false);
     void render(ShaderMng& shaderMng) const;
 
 private:
-    GLuint m_skyboxTex = 0;
+
+    void generate();
+    void generateCompat();
+    void renderPriv(ShaderMng& shaderMng) const;
+    void renderPrivCompat(ShaderMng& shaderMng) const;
+
+    bool m_compat = false;
+    GLuint m_skyboxTex[6] = {0,0,0,0,0,0};
     GLuint m_skyboxVbo = 0;
 };
 

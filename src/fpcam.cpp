@@ -30,24 +30,24 @@ void FPCam::mouse(int dx, int dy, float d)
 {
     p_ax -= dy * d;
 
-    if (p_ax < -M_PI_2)
+    if (p_ax < -glm::half_pi<float>())
     {
-        p_ax = -M_PI_2;
+        p_ax = -glm::half_pi<float>();
     }
-    else if (p_ax > M_PI_2)
+    else if (p_ax > glm::half_pi<float>())
     {
-        p_ax = M_PI_2;
+        p_ax = glm::half_pi<float>();
     }
 
     p_ay -= dx * d;
 
-    if (p_ay < -M_PI)
+    if (p_ay < -glm::pi<float>())
     {
-        p_ay += M_PI * 2;
+        p_ay += glm::pi<float>() * 2;
     }
-    else if (p_ay > M_PI)
+    else if (p_ay > glm::pi<float>())
     {
-        p_ay -= M_PI * 2;
+        p_ay -= glm::pi<float>() * 2;
     }
 }
 

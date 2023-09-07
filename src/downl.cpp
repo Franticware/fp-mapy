@@ -43,11 +43,12 @@ int downlGet(const char* url, std::vector<uint8_t>& data)
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, downlWriteData);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
     CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     if (res != CURLE_OK)
     {
-        return err;
+        return res;
     }
     return downlTest404(data);
 }

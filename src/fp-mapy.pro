@@ -19,6 +19,7 @@ SOURCES += \
         pict.cpp \
         pict_jpeg.cpp \
         shadermng.cpp \
+        singleinst.cpp \
         skyboxdata.cpp \
         textrender.cpp \
         vts/mesh.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
         vts/meshio.cpp
 
 HEADERS += \
+    checkgl.h \
     config.h \
     culling.h \
     downl.h \
@@ -42,8 +44,11 @@ HEADERS += \
     shaders/color_tex.vs.h \
     shaders/sky.fs.h \
     shaders/sky.vs.h \
+    shaders/sky_compat.fs.h \
+    shaders/sky_compat.vs.h \
     shaders/tex.fs.h \
     shaders/tex.vs.h \
+    singleinst.h \
     skyboxdata.h \
     textrender.h \
     vts/binaryio.hpp \

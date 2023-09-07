@@ -6,7 +6,7 @@
 #include <string>
 #include <regex>
 
-inline void checkGL() {}
+#include "checkgl.h"
 
 #define STR_SWCASE(prefix, ec, id) case ec::id: return prefix #id
 
@@ -17,6 +17,7 @@ inline const char* strShaderId(ShaderId a)
     //STR_SWCASE("", ShaderId, Color);
     STR_SWCASE("", ShaderId, Tex);
     STR_SWCASE("", ShaderId, Sky);
+    STR_SWCASE("", ShaderId, SkyCompat);
     STR_SWCASE("", ShaderId, SingleColor);
     STR_SWCASE("", ShaderId, ColorTex);
     /*STR_SWCASE("", ShaderId, LightTex);
@@ -118,28 +119,28 @@ static GLuint loadShader(GLenum type, const char *shaderSrc, const char* shaderN
     GLuint shader;
     GLint compiled;
 // Create the shader object
-    shader = glCreateShader(type);
+    shader = glCreateShader(type); checkGL(__FILE__, __LINE__);
     if(shader == 0)
     {
         return 0;
     }
 // Load the shader source
-    glShaderSource(shader, 1, &shaderSrc, NULL);
+    glShaderSource(shader, 1, &shaderSrc, NULL); checkGL(__FILE__, __LINE__);
 // Compile the shader
-    glCompileShader(shader);
+    glCompileShader(shader); checkGL(__FILE__, __LINE__);
 // Check the compile status
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled); checkGL(__FILE__, __LINE__);
     if(compiled == GL_FALSE)
     {
         GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen); checkGL(__FILE__, __LINE__);
         if(infoLen > 1)
         {
             std::vector<char> infoLog(infoLen);
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog.data());
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog.data()); checkGL(__FILE__, __LINE__);
             fprintf(stderr, "%s: %s\n", (type == GL_VERTEX_SHADER ? "VS" : "FS"), infoLog.data());
         }
-        glDeleteShader(shader);
+        glDeleteShader(shader); checkGL(__FILE__, __LINE__);
         return 0;
     }
     return shader;
@@ -217,6 +218,10 @@ TEST_STR_EC_COMPLETE(ShaderUniTex);
             #include "shaders/sky.vs.h"
             #include "shaders/sky.fs.h"
             break;
+        case ShaderId::SkyCompat:
+            #include "shaders/sky_compat.vs.h"
+            #include "shaders/sky_compat.fs.h"
+            break;
         case ShaderId::SingleColor:
             #include "shaders/single_color.vs.h"
             #include "shaders/single_color.fs.h"
@@ -244,97 +249,97 @@ TEST_STR_EC_COMPLETE(ShaderUniTex);
         if (!vs.empty() && !fs.empty())
         {
             adaptShader(vs, fs, opengl_profile);
-            GLuint programObject = glCreateProgram();
+            GLuint programObject = glCreateProgram(); checkGL(__FILE__, __LINE__);
             for (int i = 0; i != (GLuint)ShaderAttrib::Count; ++i)
             {
-                glBindAttribLocation(programObject, i, strShaderAttrib(i));
+                glBindAttribLocation(programObject, i, strShaderAttrib(i)); checkGL(__FILE__, __LINE__);
             }
             GLuint vId = loadShader(GL_VERTEX_SHADER,   vs.c_str(), strShaderId(id));
             GLuint fId = loadShader(GL_FRAGMENT_SHADER, fs.c_str(), strShaderId(id));
 
             if (programObject != 0)
             {
-                glAttachShader(programObject, vId);
-                glAttachShader(programObject, fId);
+                glAttachShader(programObject, vId); checkGL(__FILE__, __LINE__);
+                glAttachShader(programObject, fId); checkGL(__FILE__, __LINE__);
 
                 // Link the program
-                glLinkProgram(programObject);
+                glLinkProgram(programObject); checkGL(__FILE__, __LINE__);
                 // Check the link status
                 GLint linked;
-                glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
+                glGetProgramiv(programObject, GL_LINK_STATUS, &linked); checkGL(__FILE__, __LINE__);
                 if(linked == GL_FALSE)
                 {
                     GLint infoLen = 0;
-                    glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
+                    glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen); checkGL(__FILE__, __LINE__);
                     if(infoLen > 1)
                     {
                         std::vector<char> infoLog(infoLen);
-                        glGetProgramInfoLog(programObject, infoLen, NULL, infoLog.data());
+                        glGetProgramInfoLog(programObject, infoLen, NULL, infoLog.data()); checkGL(__FILE__, __LINE__);
                         fprintf(stderr, "LINK:%s\n", infoLog.data());
                     }
-                    glDeleteProgram(programObject);
+                    glDeleteProgram(programObject); checkGL(__FILE__, __LINE__);
                 }
-                sh.pmvloc = glGetUniformLocation(programObject, "uProjModelViewMat");
-                sh.normloc = glGetUniformLocation(programObject, "uNormMat");
+                sh.pmvloc = glGetUniformLocation(programObject, "uProjModelViewMat"); checkGL(__FILE__, __LINE__);
+                sh.normloc = glGetUniformLocation(programObject, "uNormMat"); checkGL(__FILE__, __LINE__);
                 for (int j = 0; j != (int)ShaderUniMat4::Count; ++j)
                 {
-                    sh.mat4locs[j] = glGetUniformLocation(programObject, strShaderUniMat4(j));
+                    sh.mat4locs[j] = glGetUniformLocation(programObject, strShaderUniMat4(j)); checkGL(__FILE__, __LINE__);
                 }
                 for (int j = 0; j != (int)ShaderUniVec4::Count; ++j)
                 {
-                    sh.vec4locs[j] = glGetUniformLocation(programObject, strShaderUniVec4(j));
+                    sh.vec4locs[j] = glGetUniformLocation(programObject, strShaderUniVec4(j)); checkGL(__FILE__, __LINE__);
                 }
                 for (int j = 0; j != (int)ShaderUniInt::Count; ++j)
                 {
-                    sh.intlocs[j] = glGetUniformLocation(programObject, strShaderUniInt(j));
+                    sh.intlocs[j] = glGetUniformLocation(programObject, strShaderUniInt(j)); checkGL(__FILE__, __LINE__);
                 }
 
-                glUseProgram(programObject);
+                glUseProgram(programObject); checkGL(__FILE__, __LINE__);
                 for (int j = 0; j != (int)ShaderUniTex::Count; ++j)
                 {
-                    GLint loc = glGetUniformLocation(programObject, strShaderUniTex(j));
+                    GLint loc = glGetUniformLocation(programObject, strShaderUniTex(j)); checkGL(__FILE__, __LINE__);
                     if (loc != -1)
                     {
-                        glUniform1i(loc, j);
+                        glUniform1i(loc, j); checkGL(__FILE__, __LINE__);
                     }
                 }
                 sh.program = programObject;
             }
         }
     }
-    glUseProgram(0);
+    glUseProgram(0); checkGL(__FILE__, __LINE__);
 }
 
 void ShaderMng::use(ShaderId id)
 {
-    glUseProgram(0);
+    glUseProgram(0); checkGL(__FILE__, __LINE__);
     currentShader = id;
     GLint loc;
     if (id != ShaderId::NoShader)
     {
-        glUseProgram(shaders[(int)id].program);
+        glUseProgram(shaders[(int)id].program); checkGL(__FILE__, __LINE__);
         for (int i = 0; i != (int)ShaderUniMat4::Count; ++i)
         {
             GLint loc = shaders[(int)currentShader].mat4locs[i];
             if (loc != -1)
             {
-                glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4s[i]));
+                glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4s[i])); checkGL(__FILE__, __LINE__);
             }
         }
         if ((loc = shaders[(int)currentShader].pmvloc) != -1)
         {
-            glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4pmv));
+            glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4pmv)); checkGL(__FILE__, __LINE__);
         }
         if ((loc = shaders[(int)currentShader].normloc) != -1)
         {
-            glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat3norm));
+            glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat3norm)); checkGL(__FILE__, __LINE__);
         }
         for (int i = 0; i != (int)ShaderUniVec4::Count; ++i)
         {
             GLint loc = shaders[(int)currentShader].vec4locs[i];
             if (loc != -1)
             {
-                glUniform4fv(loc, 1, glm::value_ptr(vec4s[i]));
+                glUniform4fv(loc, 1, glm::value_ptr(vec4s[i])); checkGL(__FILE__, __LINE__);
             }
         }
         for (int i = 0; i != (int)ShaderUniInt::Count; ++i)
@@ -342,7 +347,7 @@ void ShaderMng::use(ShaderId id)
             GLint loc = shaders[(int)currentShader].intlocs[i];
             if (loc != -1)
             {
-                glUniform1i(loc, ints[i]);
+                glUniform1i(loc, ints[i]); checkGL(__FILE__, __LINE__);
             }
         }
     }
@@ -368,18 +373,18 @@ void ShaderMng::set(ShaderUniMat4 id, glm::mat4 m)
     }*/
     if (currentShader != ShaderId::NoShader)
     {
-        glUseProgram(shaders[(int)currentShader].program);
+        glUseProgram(shaders[(int)currentShader].program); checkGL(__FILE__, __LINE__);
         GLint loc = shaders[(int)currentShader].mat4locs[(int)id];
         if (loc != -1)
         {
-            glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(m)); checkGL();
+            glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(m)); checkGL(__FILE__, __LINE__);
         }
         if (updatedPmv)
         {
             GLint loc = shaders[(int)currentShader].pmvloc;
             if (loc != -1)
             {
-                glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4pmv)); checkGL();
+                glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(mat4pmv)); checkGL(__FILE__, __LINE__);
             }
         }
         if (updatedNorm)
@@ -387,7 +392,7 @@ void ShaderMng::set(ShaderUniMat4 id, glm::mat4 m)
             GLint loc = shaders[(int)currentShader].normloc;
             if (loc != -1)
             {
-                glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat3norm)); checkGL();
+                glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(mat3norm)); checkGL(__FILE__, __LINE__);
             }
         }
     }
@@ -401,7 +406,7 @@ void ShaderMng::set(ShaderUniVec4 id, glm::vec4 v)
         GLint loc = shaders[(int)currentShader].vec4locs[(int)id];
         if (loc != -1)
         {
-            glUniform4fv(loc, 1, glm::value_ptr(v)); checkGL();
+            glUniform4fv(loc, 1, glm::value_ptr(v)); checkGL(__FILE__, __LINE__);
         }
     }
 }
@@ -414,7 +419,7 @@ void ShaderMng::set(ShaderUniInt id, GLint i)
         GLint loc = shaders[(int)currentShader].intlocs[(int)id];
         if (loc != -1)
         {
-            glUniform1i(loc, i); checkGL();
+            glUniform1i(loc, i); checkGL(__FILE__, __LINE__);
         }
     }
 }

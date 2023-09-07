@@ -4,12 +4,15 @@
 #include <string>
 #include <cstdint>
 
+#define MINI_CASE_SENSITIVE
 #include "mini/ini.h"
 
 class Config
 {
 public:
     Config();
+
+    void init();
 
     const std::string& configPath() const { return m_configPath; }
 
@@ -25,8 +28,9 @@ public:
 
     // advanced
     uint32_t vsync() const { return v_vsync; }
-    float aspectRatioX() const { return v_aspectRatio[0]; }
-    float aspectRatioY() const { return v_aspectRatio[1]; }
+    uint32_t aspectRatioX() const { return v_aspectRatio[0]; }
+    uint32_t aspectRatioY() const { return v_aspectRatio[1]; }
+    uint32_t depthBits() const { return v_depthBits; }
     float farPlane() const { return v_farPlane; }
     float fov() const { return v_fov; }
     float speed() const { return v_speed; }
@@ -44,6 +48,7 @@ public:
 
 private:
     bool m_updated = false;
+    bool m_init = false;
 
     template <class T> void sync(mINI::INIStructure& ini, T& val, const std::string& section, const std::string& key)
     {
@@ -89,6 +94,7 @@ private:
     // advanced
     uint32_t v_vsync = 1;
     uint32_t v_aspectRatio[2] = {16, 9};
+    uint32_t v_depthBits = 24;
     float v_farPlane = 1000.f;
     float v_fov = 50.f;
     float v_speed = 16.f;

@@ -16,6 +16,7 @@ enum class ShaderId {
     //Color = 0,
     Tex = 0,
     Sky,
+    SkyCompat,
     SingleColor,
     ColorTex, // uses AlphaDiscard
     /*LightTex, // uses AlphaDiscard
