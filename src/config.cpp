@@ -19,10 +19,12 @@ void  Config::init()
     m_init = true;
 
     m_configPath = SDL_GetPrefPath(PREF_ORG, PREF_APP);
+    m_configPathCstr = m_configPath.c_str();
     mINI::INIFile file(m_configPath + CONFIG_NAME);
     mINI::INIStructure ini;
     file.read(ini);
     v_cachePath = SDL_GetPrefPath(PREF_ORG, PREF_APP " cache");
+    v_cachePathCstr = v_cachePath.c_str();
 
     // basic
     sync(ini, v_resolution, "basic", "resolution");
@@ -56,6 +58,8 @@ void  Config::init()
     {
         file.write(ini);
     }
+
+    v_baseUrlCstr = v_baseUrl.c_str();
 }
 
 void Config::sync(mINI::INIStructure& ini, uint32_t& val, const std::string& section, const std::string& key, bool rd)

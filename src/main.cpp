@@ -109,9 +109,17 @@ int main(int argc, char** argv)
         vsync = 1;
     }
     SDL_GL_SetSwapInterval(vsync);
+
+    const char* glRenderer = (const char*)glGetString(GL_RENDERER);
+
+    //fprintf(stderr, "%s\n", glGetString(GL_RENDERER));
+    //fprintf(stderr, "%s\n", glGetString(GL_VENDOR));
+    //fprintf(stderr, "%s\n", glGetString(GL_VERSION));
+    //fprintf(stderr, "%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); fflush(stderr);
+
     ShaderMng shaderMng;
     shaderMng.init();
-    glClearColor(0.f, 0.5f, 0.f, 0.f); checkGL(__FILE__, __LINE__);
+    glClearColor(0.f, 0.f, 0.f, 0.f); checkGL(__FILE__, __LINE__);
     glEnable(GL_DEPTH_TEST); checkGL(__FILE__, __LINE__);
     glDepthFunc(GL_LEQUAL); checkGL(__FILE__, __LINE__);
 
@@ -471,7 +479,7 @@ int main(int argc, char** argv)
                 shaderMng.use(ShaderId::ColorTex);
                 textRender.clear();
                 int line = 0;
-                textRender.printf(0, line++, "%.2f fps", currentFps);
+                textRender.printf(0, line++, "%.2f fps | %s", currentFps, glRenderer);
                 textRender.printf(0, line++, "pos %d %d | rot %.2f %.2f", currentKey.x, currentKey.y, glm::degrees(cam.p_ay), glm::degrees(cam.p_ax));
                 textRender.printf(0, line++, "config path '%s'", gConf.configPath().c_str());
                 line++;

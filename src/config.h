@@ -15,6 +15,7 @@ public:
     void init();
 
     const std::string& configPath() const { return m_configPath; }
+    const char* configPathCstr() const { return m_configPathCstr; }
 
     // basic
     uint32_t resolutionX() const { return v_resolution[0]; }
@@ -39,11 +40,13 @@ public:
     uint32_t maxTilesPerFrame() const { return v_maxTilesPerFrame; }
     uint32_t fadeInTileCount() const { return v_fadeInTileCount; }
     const std::string& baseUrl() const { return v_baseUrl; }
+    const char* baseUrlCstr() const { return v_baseUrlCstr; }
     uint32_t parallelDownloads() const { return v_parallelDownloads; }
 
     // cache
     uint32_t cacheEnabled() const { return v_cacheEnabled; }
     const std::string& cachePath() const { return v_cachePath; }
+    const char* cachePathCstr() const { return v_cachePathCstr; }
     uint32_t cacheMinFreeSpaceGB() const { return v_cacheMinFreeSpaceGB; }
 
 private:
@@ -83,6 +86,7 @@ private:
     void sync(mINI::INIStructure& ini, std::string& s, const std::string& section, const std::string& key, bool rd);
 
     std::string m_configPath;
+    const char* m_configPathCstr = nullptr;
 
     // basic
     uint32_t v_resolution[2] = {1280, 720};
@@ -104,11 +108,13 @@ private:
     uint32_t v_fadeInTileCount = 50;
     std::string v_baseUrl = "https://mapserver-3d.mapy.cz/latestStage/tilesets/cities/";
     //                      "https://mapserver-3d.mapy.cz/latestStage/tilesets/ev2@3/";
+    const char* v_baseUrlCstr = nullptr;
     uint32_t v_parallelDownloads = 4;
 
     // cache
     uint32_t v_cacheEnabled = 1;
     std::string v_cachePath; // by constructor
+    const char* v_cachePathCstr = nullptr;
     uint32_t v_cacheMinFreeSpaceGB = 10;
 };
 

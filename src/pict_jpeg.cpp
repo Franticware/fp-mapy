@@ -22,7 +22,7 @@ METHODDEF(void) my_error_exit(j_common_ptr cinfo)
 
 METHODDEF(void) my_emit_message(j_common_ptr cinfo, int)
 {
-    *(((my_error_mgr*)(((jpeg_compress_struct*)cinfo)->err))->ret) |= 4;
+    //*(((my_error_mgr*)(((jpeg_compress_struct*)cinfo)->err))->ret) |= 4;
 }
 
 METHODDEF(void) my_output_message(j_common_ptr)
@@ -202,8 +202,8 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
      * warnings occurred (test whether jerr.pub.num_warnings is nonzero).
      */
 
-    if (jerr.pub.num_warnings)
-        ret |= 4;
+    /*if (jerr.pub.num_warnings)
+        ret |= 4;*/
 
     /* And we're done! */
     return ret;
