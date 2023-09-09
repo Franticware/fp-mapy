@@ -1,0 +1,50 @@
+LIBSDL2_INCLUDEPATH =mingw32/SDL2/i686-w64-mingw32/include
+LIBSDL2_LIB =mingw32/SDL2/i686-w64-mingw32/lib/libSDL2.dll.a
+LIBSDL2_DLL =mingw32/SDL2/i686-w64-mingw32/bin/SDL2.dll
+
+LIBGLES2_INCLUDEPATH =mingw32/angle/include
+LIBGLES2_LIB =mingw32/angle/lib/libGLESv2.dll.lib
+LIBGLES2_DLL =mingw32/angle/bin/d3dcompiler_47.dll mingw32/angle/bin/libEGL.dll mingw32/angle/bin/libGLESv2.dll
+
+LIBZLIB_INCLUDEPATH =mingw32/zlib
+LIBZLIB_LIB =mingw32/zlib/libzlibstatic.a
+
+LIBJPEG_INCLUDEPATH =mingw32/libjpeg-turbo
+LIBJPEG_LIB =mingw32/libjpeg-turbo/libjpeg.a
+
+LIBCURL_INCLUDEPATH =mingw32/curl/include
+LIBCURL_LIB =mingw32/curl/lib/libcurl.dll.a
+LIBCURL_DLL =mingw32/curl/bin/libcurl.dll
+
+CFLAGS = -O2 -Wall -Wextra -Wno-cast-function-type -DSDL_MAIN_HANDLED -fno-exceptions -fPIC -std=c++20 -I$(LIBCURL_INCLUDEPATH) -I$(LIBSDL2_INCLUDEPATH) -I$(LIBJPEG_INCLUDEPATH) -I$(LIBGLES2_INCLUDEPATH) -I$(LIBZLIB_INCLUDEPATH) -I. -DNDEBUG -DUNICODE -D_UNICODE -fexceptions
+LFLAGS = $(LIBSDL2_LIB) $(LIBJPEG_LIB) $(LIBZLIB_LIB) $(LIBGLES2_LIB) $(LIBCURL_LIB) -lm -s -static-libstdc++ -static-libgcc -static -mwindows
+
+CXX    = i686-w64-mingw32-g++
+LINK   = i686-w64-mingw32-g++
+WINDRES= i686-w64-mingw32-windres
+
+TARGET = fp-mapy.exe
+RES    = fpmicon.res
+OBJS := $(shell ls *.cpp vts/*.cpp | sed 's/.cpp/.o/g' | tr '\n' ' ')
+
+.PHONY: all clean dist
+
+all: $(TARGET)
+
+clean:
+	rm -f *.o vts/*.o $(RES) $(TARGET)
+
+%.o: %.cpp *.h shaders/*.h vts/*.hpp mini/*.h
+	$(CXX) -c $(CFLAGS) $< -o $@
+
+%.res: %.rc
+	$(WINDRES) $< -O coff -o $@
+
+$(TARGET): $(RES) $(OBJS)
+	$(LINK) -o $(TARGET) $(OBJS) $(RES) $(LFLAGS)
+
+dist: all
+	$(eval DISTDIR := fp-mapy-$(shell date +%Y%m%d -r fp-mapy.exe))
+	mkdir -p $(DISTDIR)
+	rm -f $(DISTDIR)/*
+	cp fp-mapy.exe $(LIBSDL2_DLL) $(LIBGLES2_DLL) $(LIBCURL_DLL) *.ini ../LICENSE ../README.md $(DISTDIR)
