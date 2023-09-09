@@ -17,16 +17,21 @@ MapTile::MapTile()
 {
 }
 
-static void readFile(FILE* fin, std::vector<uint8_t>& data)
+static void readFile(const char* fileName, std::vector<uint8_t>& data)
 {
     data.clear();
-    fseek(fin, 0, SEEK_END);
-    long sz = ftell(fin);
-    rewind(fin);
-    data.resize(sz);
-    if (fread(data.data(), 1, data.size(), fin) != data.size())
+    FILE* fin = fopen(fileName, "rb");
+    if (fin)
     {
-        data.clear();
+        fseek(fin, 0, SEEK_END);
+        long sz = ftell(fin);
+        rewind(fin);
+        data.resize(sz);
+        if (fread(data.data(), 1, data.size(), fin) != data.size())
+        {
+            data.clear();
+        }
+        fclose(fin);
     }
 }
 
@@ -40,56 +45,56 @@ static void writeFile(const char* fileName, const std::vector<uint8_t>& data)
     }
 }
 
-static void emptyFile(const char* fileName)
+static int loadT(const std::vector<uint8_t>& data, Pict& pict)
 {
-    FILE* fout = fopen(fileName, "wb");
-    if (fout)
-    {
-        fclose(fout);
-    }
+    return pict.loadjpeg(data.data(), data.size());
 }
 
-static void emptyFile(const char* basePath, const char* fileName)
+static int loadT(const std::vector<uint8_t>& data, vtslibs::vts::Mesh& mesh)
 {
-    char buff[1024] = {0};
-    snprintf(buff, 1023, "%s%s", basePath, fileName);
-    emptyFile(buff);
+    return loadMeshZ(data, mesh);
 }
 
-static int downlGetCached(const char* baseUrl, const char* basePath, const char* fileName, bool cacheEnabled, std::vector<uint8_t>& data)
+template<class T> int downlGetCached(const char* baseUrl, const char* basePath, const char* fileName, bool cacheEnabled, T& t, bool& dl)
 {
+    std::vector<uint8_t> data;
     const int ok = 0;
     int result = ok;
     char buff[1024] = {0};
-    FILE* fin = nullptr;
     if (cacheEnabled)
     {
         snprintf(buff, 1023, "%s%s", basePath, fileName);
-        fin = fopen(buff, "rb");
-    }
-    data.clear();
-    if (fin)
-    {
-        readFile(fin, data);
-        fclose(fin);
-    }
-    if (data.empty())
-    {
-        snprintf(buff, 1023, "%s%s", baseUrl, fileName);
-        result = downlGet(buff, data);
-        if (cacheEnabled)
+        readFile(buff, data);
+        int cachedResult = loadT(data, t);
+        if (cachedResult == ok)
         {
-            if (getAvailableSpace(basePath) > long(gConf.cacheMinFreeSpaceGB()) * long(1024) * long(1024) * long(1024))
-            {
-                snprintf(buff, 1023, "%s%s", basePath, fileName);
-                writeFile(buff, data);
-            }
+            return ok;
+        }
+    }
+    snprintf(buff, 1023, "%s%s", baseUrl, fileName);
+    result = downlGet(buff, data);
+    dl = true;
+    if (result != ok)
+    {
+        return result;
+    }
+    result = loadT(data, t);
+    if (result != ok)
+    {
+        return result;
+    }
+    if (cacheEnabled)
+    {
+        if (getAvailableSpace(basePath) > long(gConf.cacheMinFreeSpaceGB()) * long(1024) * long(1024) * long(1024))
+        {
+            snprintf(buff, 1023, "%s%s", basePath, fileName);
+            writeFile(buff, data);
         }
     }
     return result;
 }
 
-int MapTile::load(MapTileKey k)
+int MapTile::load(MapTileKey k, bool& dl)
 {
     const int ok = 0;
     //const int err = 1;
@@ -101,37 +106,16 @@ int MapTile::load(MapTileKey k)
     char fileName[64] = {0};
     snprintf(fileName, 63, "21-%06d-%06d.bin", k.x, k.y);
     int res = 0;
-    std::vector<uint8_t> data;
-    if ((downlGetCached(baseUrl, cachePath, fileName, cacheEnabled, data)) != ok)
+    if ((res = downlGetCached(baseUrl, cachePath, fileName, cacheEnabled, m_mesh, dl)) != ok)
     {
-        fprintf(stderr, "%d: %s%s\n", res, baseUrl, fileName);
-        fflush(stderr);
-        return res;
-    }
-    if ((res = loadMeshZ(data, m_mesh)) != ok)
-    {
-        if (cacheEnabled)
-        {
-            emptyFile(cachePath, fileName);
-        }
         return res;
     }
     m_pics.resize(m_mesh.submeshes.size());
     for (size_t i = 0; i != m_mesh.submeshes.size(); ++i)
     {
         snprintf(fileName, 63, "21-%06d-%06d-%d.jpg", k.x, k.y, int(i));
-        if ((downlGetCached(baseUrl, cachePath, fileName, cacheEnabled, data)) != ok)
+        if ((res = downlGetCached(baseUrl, cachePath, fileName, cacheEnabled, m_pics[i], dl)) != ok)
         {
-            fprintf(stderr, "%d: %s%s\n", res, baseUrl, fileName);
-            fflush(stderr);
-            return res;
-        }
-        if ((res = m_pics[i].loadjpeg(data.data(), data.size())) != ok)
-        {
-            if (cacheEnabled)
-            {
-                emptyFile(cachePath, fileName);
-            }
             return res;
         }
     }

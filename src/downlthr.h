@@ -20,7 +20,9 @@ public:
     void setPosRot(const glm::dvec3& pos, const glm::mat3& rot);
 
     void start(MapTileKey key);
-    void finish(std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus);
+    void finish(std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, std::map<MapTileKey, int>& tileErrors);
+
+    bool m_dl = false;
 
     std::vector<std::thread> m_thread;
 
@@ -39,6 +41,6 @@ public:
 };
 
 void downlThrEnqueue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, int>& tileStatus, MapTileKey nearestKey);
-void downlThrDequeue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, int* initialLoadCounter);
+void downlThrDequeue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, std::map<MapTileKey, int>& tileErrors, int* initialLoadCounter, bool& dl);
 
 #endif // DOWNLTHR_H

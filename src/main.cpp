@@ -17,6 +17,7 @@
 #include "meshes.h"
 #include "config.h"
 #include "singleinst.h"
+#include "errmsg.h"
 
 #include "checkgl.h"
 
@@ -59,7 +60,8 @@ int main(int argc, char** argv)
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
     {
-        fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+        //fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+        errmsgPrintf("Unable to init SDL: %s\n", SDL_GetError());
         return 1;
     }
 
@@ -67,6 +69,7 @@ int main(int argc, char** argv)
 
     if (singleInst() != ok)
     {
+        errmsgPuts("Already running.");
         return 1;
     }
 
@@ -94,13 +97,15 @@ int main(int argc, char** argv)
                                                                  &quitSDLWindow);
     if (!window.get())
     {
-        fprintf(stderr, "Unable to create window: %s\n", SDL_GetError());
+        //fprintf(stderr, "Unable to create window: %s\n", SDL_GetError());
+        errmsgPrintf("Unable to create window: %s\n", SDL_GetError());
         return 1;
     }
     SDL_GLContext context = SDL_GL_CreateContext(window.get());
     if (!context)
     {
-        fprintf(stderr, "Unable to create GL context: %s\n", SDL_GetError());
+        //fprintf(stderr, "Unable to create GL context: %s\n", SDL_GetError());
+        errmsgPrintf("Unable to create GL context: %s\n", SDL_GetError());
         return 1;
     }
     int vsync = 0;
@@ -167,8 +172,10 @@ int main(int argc, char** argv)
     const float movementSpeed = gConf.speed();
     const float movementFastSpeed = gConf.shiftSpeed();
 
+    bool downloadedInFrame = false;
+
     MapTile firstTile;
-    if (firstTile.load(currentKey) != ok)
+    if (firstTile.load(currentKey, downloadedInFrame) != ok)
     {
         // first tile must load
         return 1;
@@ -182,6 +189,7 @@ int main(int argc, char** argv)
 
     std::map<MapTileKey, TileGl> tileGlMap;
     std::map<MapTileKey, int> tileStatus;
+    std::map<MapTileKey, int> tileErrors; // error counter
 
     tileGlMap[currentKey].load(firstTile);
     tileStatus[currentKey] = MTS_DONE;
@@ -482,6 +490,11 @@ int main(int argc, char** argv)
                 textRender.printf(0, line++, "%.2f fps | %s", currentFps, glRenderer);
                 textRender.printf(0, line++, "pos %d %d | rot %.2f %.2f", currentKey.x, currentKey.y, glm::degrees(cam.p_ay), glm::degrees(cam.p_ax));
                 textRender.printf(0, line++, "config path '%s'", gConf.configPath().c_str());
+                if (downloadedInFrame)
+                {
+                    textRender.printf(0, line, "*");
+                    downloadedInFrame = false;
+                }
                 line++;
                 textRender.printf(0, line++, "WASD - movement");
                 textRender.printf(0, line++, "left shift - fast movement");
@@ -506,7 +519,7 @@ int main(int argc, char** argv)
 
             for (uint32_t t = 0; t < confMaxTilesPerFrame; ++t)
             {
-                downlThrDequeue(downlThr, tileGlMap, tileStatus, initialLoadCounterPtr);
+                downlThrDequeue(downlThr, tileGlMap, tileStatus, tileErrors, initialLoadCounterPtr, downloadedInFrame);
             }
             for (uint32_t t = 0; t < confMaxTilesPerFrame; ++t)
             {

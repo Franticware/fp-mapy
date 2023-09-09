@@ -16,9 +16,10 @@ void DownlThr::setPosRot(const glm::dvec3& pos, const glm::mat3& rot)
 
 void DownlThr::start(MapTileKey key)
 {
+    m_dl = false;
     m_key = key;
     std::packaged_task<void()> task([this, key] {
-        m_result = m_tile.load(key);
+        m_result = m_tile.load(key, m_dl);
 
         const int ok = 0;
 
@@ -34,10 +35,12 @@ void DownlThr::start(MapTileKey key)
     m_thread.push_back(std::thread(std::move(task)));
 }
 
-void DownlThr::finish(std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus)
+void DownlThr::finish(std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, std::map<MapTileKey, int>& tileErrors)
 {
     m_thread[0].join();
     m_thread.clear();
+
+    const int maxErrors = 4;
 
     if (m_result == 0)
     {
@@ -50,7 +53,16 @@ void DownlThr::finish(std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileK
     }
     else
     {
-        tileStatus[m_key] = MTS_EMPTY;
+        ++tileErrors[m_key];
+
+        if (tileErrors[m_key] > maxErrors)
+        {
+            tileStatus[m_key] = MTS_FAIL;
+        }
+        else
+        {
+            tileStatus[m_key] = MTS_EMPTY;
+        }
     }
 }
 
@@ -69,7 +81,7 @@ void downlThrEnqueue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, int>&
     }
 }
 
-void downlThrDequeue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, int* initialLoadCounter)
+void downlThrDequeue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, TileGl>& tileGlMap, std::map<MapTileKey, int>& tileStatus, std::map<MapTileKey, int>& tileErrors, int* initialLoadCounter, bool& dl)
 {
     for (size_t i = 0; i != downlThr.size(); ++i)
     {
@@ -79,7 +91,11 @@ void downlThrDequeue(std::vector<DownlThr>& downlThr, std::map<MapTileKey, TileG
             auto status = downlThr[i].m_future.wait_for(0ms);
             if (status == std::future_status::ready)
             {
-                downlThr[i].finish(tileGlMap, tileStatus);
+                downlThr[i].finish(tileGlMap, tileStatus, tileErrors);
+                if (downlThr[i].m_dl)
+                {
+                    dl = true;
+                }
                 if (initialLoadCounter)
                 {
                     ++(*initialLoadCounter);

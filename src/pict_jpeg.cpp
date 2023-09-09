@@ -9,6 +9,18 @@ extern "C"
 
 #include "pict.h"
 
+int Pict::loadjpeg(const char* fname)
+{
+    return !loadjpeg_pom(true, fname, 0);
+}
+
+int Pict::loadjpeg(const void* data, unsigned int size)
+{
+    return !loadjpeg_pom(false, data, size);
+}
+
+//
+
 struct my_error_mgr {
     jpeg_error_mgr pub;
     int* ret;
@@ -22,23 +34,11 @@ METHODDEF(void) my_error_exit(j_common_ptr cinfo)
 
 METHODDEF(void) my_emit_message(j_common_ptr cinfo, int)
 {
-    //*(((my_error_mgr*)(((jpeg_compress_struct*)cinfo)->err))->ret) |= 4;
+    *(((my_error_mgr*)(((jpeg_compress_struct*)cinfo)->err))->ret) |= 4;
 }
 
 METHODDEF(void) my_output_message(j_common_ptr)
 {
-}
-
-//
-
-int Pict::loadjpeg(const char* fname)
-{
-    return loadjpeg_pom(true, fname, 0);
-}
-
-int Pict::loadjpeg(const void* data, unsigned int size)
-{
-    return loadjpeg_pom(false, data, size);
 }
 
 METHODDEF(void) my_init_source(j_decompress_ptr /*cinfo*/)
@@ -67,9 +67,6 @@ METHODDEF(void) my_term_source(j_decompress_ptr /*cinfo*/)
 
 int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_size)
 {
-    const int ok = 0;
-    const int err = 1;
-
     /* This struct contains the JPEG decompression parameters and pointers to
      * working space (which is allocated as needed by the JPEG library).
      */
@@ -85,7 +82,8 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
     int row_stride;		/* physical row width in output buffer */
 
     jpeg_source_mgr source_mgr;
-    int ret = ok;
+
+    int ret = 1;
 
     clear();
 
@@ -99,7 +97,7 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
     {
         fin = fopen((const char*)fname_data, "rb");
         if (!fin)
-            return err;
+            return 0;
     }
 
     /* Step 1: allocate and initialize JPEG decompression object */
@@ -117,7 +115,7 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
         jpeg_destroy_decompress(&cinfo);
         if (bfile)
             fclose(fin);
-        return err;
+        return 0;
     }
 
     /* Now we can initialize the JPEG decompression object. */
@@ -126,8 +124,11 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
     /* Step 2: specify data source (eg, a file) */
 
     if (bfile)
+    {
         jpeg_stdio_src(&cinfo, fin);
-    else {
+    }
+    else
+    {
         source_mgr.next_input_byte = (const unsigned char*)fname_data;
         source_mgr.bytes_in_buffer = data_size;
 
@@ -165,11 +166,11 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
         cinfo.out_color_space = JCS_RGB;
         create(cinfo.output_width, cinfo.output_height, 0);
         row_stride = cinfo.output_width * 3;
-        buffer = (*cinfo.mem->alloc_sarray)
-            ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
-        while (cinfo.output_scanline < cinfo.output_height) {
+        buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+        while (cinfo.output_scanline < cinfo.output_height)
+        {
             jpeg_read_scanlines(&cinfo, buffer, 1);
-        memcpy(p_px.data()+(cinfo.output_height-cinfo.output_scanline)*row_stride, *buffer, row_stride);
+            memcpy(p_px.data()+(cinfo.output_height-cinfo.output_scanline)*row_stride, *buffer, row_stride);
         }
     }
 
@@ -195,15 +196,15 @@ int Pict::loadjpeg_pom(bool bfile, const void* fname_data, unsigned int data_siz
     if (empty())
     {
         clear();
-        return err;
+        return 0;
     }
 
     /* At this point you may want to check to see whether any corrupt-data
      * warnings occurred (test whether jerr.pub.num_warnings is nonzero).
      */
 
-    /*if (jerr.pub.num_warnings)
-        ret |= 4;*/
+    if (jerr.pub.num_warnings)
+        ret |= 4;
 
     /* And we're done! */
     return ret;

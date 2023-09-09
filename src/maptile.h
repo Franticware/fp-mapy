@@ -11,6 +11,7 @@
 #define MTS_EMPTY 0
 #define MTS_IN_PROGRESS 1
 #define MTS_DONE 2
+#define MTS_FAIL 3
 #define MTS_404 404
 
 struct MapTileKey
@@ -43,7 +44,7 @@ class MapTile
 {
 public:
     MapTile();
-    int load(MapTileKey k);
+    int load(MapTileKey k, bool& dl);
     void calcPosRot(glm::dvec3& pos, glm::mat3& rot) const;
     void precomp(const glm::dvec3& pos, const glm::mat3& rot);
 

@@ -10,6 +10,7 @@ SOURCES += \
         culling.cpp \
         downl.cpp \
         downlthr.cpp \
+        errmsg.cpp \
         fpcam.cpp \
         freespace.cpp \
         load_texture.cpp \
@@ -32,6 +33,7 @@ HEADERS += \
     culling.h \
     downl.h \
     downlthr.h \
+    errmsg.h \
     fpcam.h \
     freespace.h \
     load_texture.h \

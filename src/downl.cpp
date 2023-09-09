@@ -9,10 +9,8 @@
 static size_t downlWriteData(void *ptr, size_t size, size_t nmemb, std::vector<uint8_t>* data)
 {
     const uint8_t* ubptr = (uint8_t*)ptr;
-    for (size_t i = 0; i != size * nmemb; ++i)
-    {
-        data->push_back(ubptr[i]);
-    }
+    size_t nbytes = size * nmemb;
+    data->insert(data->end(), ubptr, ubptr + nbytes);
     return nmemb;
 }
 

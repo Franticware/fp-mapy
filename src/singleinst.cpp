@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-static int singleInstAux(void)
+int singleInst(void)
 {
     const int ok = 0;
     const int err = 1;
@@ -34,17 +34,6 @@ static int singleInstAux(void)
     return ok;
 }
 
-int singleInst(void)
-{
-    const int ok = 0;
-    int result = singleInstAux();
-    if (result != ok)
-    {
-        fprintf(stderr, "Already running, exiting...\n");
-    }
-    return result;
-}
-
 #else
 
 #include <windows.h>
@@ -54,12 +43,11 @@ int singleInst(void)
 {
     const int ok = 0;
     const int err = 1;
-    CreateMutex(0, 1, "Global\\fpmapy");
+    CreateMutex(0, 1, _T("Global\\fpmapy"));
     if (GetLastError() != ERROR_ALREADY_EXISTS)
     {
         return ok;
     }
-    MessageBox(NULL, _T("Already running, will exit..."), _T("Error"), MB_ICONERROR | MB_OK);
     return err;
 }
 
