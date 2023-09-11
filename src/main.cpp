@@ -528,12 +528,12 @@ int main(int argc, char** argv)
                 {
                     if (std::abs(it->first.x - currentKey.x) > confDropRadius || std::abs(it->first.y - currentKey.y) > confDropRadius)
                     {
-                        tileGlMap.erase(it);
                         auto its = tileStatus.find(it->first);
                         if (its != tileStatus.end())
                         {
                             tileStatus.erase(its);
                         }
+                        tileGlMap.erase(it);
                         break;
                     }
                 }
