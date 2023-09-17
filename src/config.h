@@ -28,6 +28,7 @@ public:
     float rot1() const { return v_rot[1]; }
 
     // advanced
+    const std::string& anglePlatform() const { return v_anglePlatform; }
     uint32_t vsync() const { return v_vsync; }
     uint32_t aspectRatioX() const { return v_aspectRatio[0]; }
     uint32_t aspectRatioY() const { return v_aspectRatio[1]; }
@@ -96,6 +97,7 @@ private:
     float v_rot[2] = {-150.f, 16.f};
 
     // advanced
+    std::string v_anglePlatform = "default";
     uint32_t v_vsync = 1;
     uint32_t v_aspectRatio[2] = {16, 9};
     uint32_t v_depthBits = 24;

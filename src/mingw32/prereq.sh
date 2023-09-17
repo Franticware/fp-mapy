@@ -7,12 +7,12 @@ wget https://curl.se/windows/dl-$CURLVER/curl-$CURLVER-win32-mingw.zip
 unzip curl-$CURLVER-win32-mingw.zip
 mv curl-$CURLVER-win32-mingw curl
 
-SDL2VER=2.26.3
+SDLVER=2.28.3-tweak-angle-1
 rm -Rf SDL2
-rm -f SDL2-devel-$SDL2VER-mingw.tar.gz SDL2.dll
-wget https://libsdl.org/release/SDL2-devel-$SDL2VER-mingw.tar.gz
-tar -xvf SDL2-devel-$SDL2VER-mingw.tar.gz
-mv SDL2-$SDL2VER SDL2
+rm -f SDL-$SDLVER-win32.zip
+wget https://github.com/Franticware/SDL/releases/download/$SDLVER/SDL-$SDLVER-win32.zip
+unzip SDL-$SDLVER-win32.zip
+mv SDL-$SDLVER-win32 SDL2
 
 rm -Rf libjpeg-turbo
 git clone https://github.com/libjpeg-turbo/libjpeg-turbo.git

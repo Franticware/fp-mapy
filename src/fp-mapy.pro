@@ -6,6 +6,7 @@ CONFIG -= qt
 LIBS += -lSDL2 -lGLESv2 -ljpeg -lz -lcurl
 
 SOURCES += \
+        anglehints.cpp \
         config.cpp \
         culling.cpp \
         downl.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
         vts/meshio.cpp
 
 HEADERS += \
+    anglehints.h \
     checkgl.h \
     config.h \
     culling.h \

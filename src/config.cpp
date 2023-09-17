@@ -32,6 +32,7 @@ void  Config::init()
     sync(ini, v_mouseSensitivity, "basic", "mouseSensitivity");
 
     // advanced
+    sync(ini, v_anglePlatform, "advanced", "anglePlatform");
     sync(ini, v_vsync, "advanced", "vsync");
     sync(ini, v_aspectRatio, "advanced", "aspectRatio");
     sync(ini, v_depthBits, "advanced", "depthBits");

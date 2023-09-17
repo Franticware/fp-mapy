@@ -18,7 +18,7 @@
 #include "config.h"
 #include "singleinst.h"
 #include "errmsg.h"
-
+#include "anglehints.h"
 #include "checkgl.h"
 
 void calcViewportParams(int* x, int* y, int* w, int* h, int ww, int wh, int aw, int ah)
@@ -79,6 +79,8 @@ int main(int argc, char** argv)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, int(gConf.depthBits()));
+
+    setAngleHints(gConf.anglePlatform().c_str());
 
     uint32_t fullscreenFlag = 0;
     if (gConf.fullscreen())

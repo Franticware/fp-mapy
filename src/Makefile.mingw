@@ -1,10 +1,10 @@
-LIBSDL2_INCLUDEPATH =mingw32/SDL2/i686-w64-mingw32/include
-LIBSDL2_LIB =mingw32/SDL2/i686-w64-mingw32/lib/libSDL2.dll.a
-LIBSDL2_DLL =mingw32/SDL2/i686-w64-mingw32/bin/SDL2.dll
+LIBSDL2_INCLUDEPATH =mingw32/SDL2/include
+LIBSDL2_LIB =mingw32/SDL2/lib/SDL2.lib
+LIBSDL2_DLL =mingw32/SDL2/bin/SDL2.dll
 
 LIBGLES2_INCLUDEPATH =mingw32/angle/include
 LIBGLES2_LIB =mingw32/angle/lib/libGLESv2.dll.lib
-LIBGLES2_DLL =mingw32/angle/bin/d3dcompiler_47.dll mingw32/angle/bin/libEGL.dll mingw32/angle/bin/libGLESv2.dll
+LIBGLES2_DLL =mingw32/angle/bin/d3dcompiler_47.dll mingw32/angle/bin/libEGL.dll mingw32/angle/bin/libGLESv2.dll mingw32/angle/bin/vk_swiftshader.dll mingw32/angle/bin/vulkan-1.dll
 
 LIBZLIB_INCLUDEPATH =mingw32/zlib
 LIBZLIB_LIB =mingw32/zlib/libzlibstatic.a
@@ -45,6 +45,11 @@ $(TARGET): $(RES) $(OBJS)
 
 dist: all
 	$(eval DISTDIR := fp-mapy-$(shell date +%Y%m%d -r fp-mapy.exe))
+	rm -Rf $(DISTDIR)
+	rm -f $(DISTDIR).7z
 	mkdir -p $(DISTDIR)
-	rm -f $(DISTDIR)/*
 	cp fp-mapy.exe $(LIBSDL2_DLL) $(LIBGLES2_DLL) $(LIBCURL_DLL) *.ini ../LICENSE ../README.md $(DISTDIR)
+	unix2dos $(DISTDIR)/LICENSE
+	unix2dos $(DISTDIR)/README.md
+	unix2dos $(DISTDIR)/*.ini
+	7z a $(DISTDIR).7z $(DISTDIR)/*

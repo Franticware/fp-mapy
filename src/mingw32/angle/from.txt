@@ -1,2 +1,2 @@
 include and lib: https://jamssoft.tistory.com/258
-dll: Google Chrome 116.0.5845.180
+dll: Google Chrome 116.0.5845.188
