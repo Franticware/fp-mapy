@@ -9,13 +9,15 @@ Press F1 in the program for more information.
 ## fpmapy.ini
 Explanation of some of the configuration values:
 
-|               |                                           |                                  |
+| Key           | Description                               | Values                           |
 |---------------|-------------------------------------------|----------------------------------|
-| **Key**       | **Description**                           | **Values**                       |
 | \[advanced\]  |                                           |                                  |
 | anglePlatform | Backend for ANGLE (if applicable)         | default d3d11 d3d9 opengl vulkan |
 | viewDistance  | Max. view range in tiles                  |                                  |
 | farPlane      | Max. view range in meters                 |                                  |
+| \[location\]  |                                           |                                  |
+| pos           | Initial position in tiles                 |                                  |
+| rot           | View direction (angles in degrees)        |                                  |
 
 ## References
 
