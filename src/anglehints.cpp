@@ -49,8 +49,6 @@ void setAngleHints(const char* platform)
     static const EGLint vulkanDisplayAttributes[] = {
                     EGL_PLATFORM_ANGLE_TYPE_ANGLE,
                     EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE,
-                    EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE,
-                    EGL_TRUE,
                     EGL_NONE
                 };
 
